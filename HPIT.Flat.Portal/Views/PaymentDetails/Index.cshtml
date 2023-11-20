@@ -1,0 +1,152 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="">
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;margin-right: 72px;">
+                <div class="has-feedback">
+                    <ul>
+                        @*<li>
+            <label style="position:relative;left:-25px;top:1px;font-size:16px;">批次：</label>
+            @Html.DropDownList("selectitem", ViewBag.ProJname as IEnumerable<SelectListItem>, new { @class = "form-control input-sm searchInput" })
+        </li>*@
+                        @*<li>
+            <label style="margin-right:0px!important;margin-left:5px;">批次：</label>
+            <input class="form-control" name="projectName" id="batchName">
+        </li>*@
+                        <li>
+                            <label style="margin-right:0px!important;margin-left:5px;">项目部：</label>
+                            <input class="form-control" style="height:30px;" name="projectName" id="projectName">
+                        </li>
+                        <li>
+                            <label style="position:relative;left:-25px;top:1px;font-size:16px;">学生姓名：</label>
+                            <input id="StuName" type="text" class="form-control" style="height:30px;" />
+                        </li>
+                        <li>
+                            <label style="margin-right:0px!important;margin-left:5px;">缴费状态：</label>
+                            <select id="DropDownList_paystatus" name="paystatus" class=" input-sm searchInput">
+                                <option value="-1">请选择</option>
+                                <option value="1">未缴费</option>
+                                <option value="2">欠费中</option>
+                                <option value="3">缴费完成</option>
+                            </select>
+                        </li>
+                        <li>
+                            <input type="button" value="查询" id="searchBtn" style="margin-right: 10px;" data-toggle="modal" class="btn btn-primary" />
+                            <input type="button" value="导出" id="Btn" data-toggle="modal" class="btn btn-primary" />
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>学生姓名</th>
+                        <th>校区</th>
+                        <th>批次</th>
+                        <th>项目部</th>
+                        <th>PEM</th>
+                        <th>公寓号</th>
+                        <th>入住日期</th>
+                        <th>离宿日期</th>
+                        <th>房间标准</th>
+                        <th>应缴金额</th>
+                        <th>月押金</th>
+                        <th>实缴金额</th>
+                        <th>欠费金额</th>
+                        <th>扣款金额</th>
+                        @*<th>扣款原因</th>*@
+                        <th>退款金额</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${StuName}</td>
+                        <td>${School}</td>
+                        <td>${Batch}</td>
+                        <td>${ProjectName}</td>
+                        <td>${PEM}</td>
+                        <td>${DormNo}</td>
+                        <td>${JoinTime}</td>
+                        <td>${LeaveTime}</td>
+                        <td>${DormSize}</td>
+                        <td>${NeedPayMoney}</td>
+                        <td>${DepositMoney}</td>
+                        <td>${TotalPayMoney}</td>
+                        <th>${OweMoney}</th>
+                        <th>${DeductMoney}</th>
+                        @*<th>${DeductRemark}</th>*@
+                        <th>${RefundMoney}</th>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            rentMoney: 0,
+            depositMoney: 0,
+            fileinfo: null,
+            count: null,
+            getlist: null,
+            queryList: function () {
+                var batch = $("#TextBox_Batch").val();
+                var projectName = $("#projectName").val();
+                var paystatus = $("#DropDownList_paystatus").val();
+                var direction = '';
+                var stuName = $("#stuName").val();
+                count = { "PageIndex": _.currentPageIndex - 1, "PageSize": 6, "Entity": { "Batch": null, "ProjectName": projectName, "StuName": stuName, "Direction": direction, "PayStatus": paystatus } };
+                getlist = { "ProJName": projectName, "StuName": name };
+                _.queryList("/PaymentDetails/QueryPageData", count);
+            }
+        }
+        $(document).ready(function () {
+            var value = $("#selectitem").children().first().attr("value")//获取第一条属性
+            $("#selectitem").children().first().text("请选择项目部").attr("value", "")//设置第一条属性
+            $("#selectitem").append("<option value=" + value + ">" + value + "</option>");//添加第一条
+            dorm.queryList();//初始加载全部
+            //部门查询
+            $("#selectitem").change(function () {
+                var ProjName = $(this).children('option:selected').val();
+                console.log(ProjName);
+                dorm.queryList();
+            });
+            //学生姓名查询
+            $("#searchBtn").click(function () {
+                _.currentPageIndex = -1;
+                dorm.queryList();
+            })
+            $("#Btn").click(function () {
+                //var Filname = prompt("请输入文件名")
+                var Stuname = $("#StuName").val();//获取输入姓名
+                var projectName = $("#selectitem").children('option:selected').val();
+                window.open('/PaymentDetails/ExcelExport?ProjectName=' + projectName + "&StuName=" + Stuname);
+            })
+        })
+    </script>
+}

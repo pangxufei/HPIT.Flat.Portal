@@ -1,0 +1,102 @@
+﻿@{
+    ViewBag.Title = "CityStatistic";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <style>
+        #loading {
+            display: none;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            filter: alpha(opacity=40);
+            background: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+        }
+    </style>
+}
+<div id="loading">
+    <img src="~/img/loadingimg/loading3.gif" style="margin-left: 40%; margin-top: 200px; width: 150px; height: 150px;" />
+</div>
+<h3>绿城中洲国际宾客意见统计</h3>
+<div class="row" style="display:block; height:95vh;overflow:scroll;">
+    <div class="col-md-5">
+        <table id="ListTb" style="width: 500px; margin-left: 20px;" class="table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>日期</th>
+                <th>满意</th>
+                <th>建议</th>
+                <th>意见</th>
+                <th>总计</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-offset-2 col-md-5">
+        <table id="ListTb2" style="width: 500px;" class=" table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>次数</th>
+                <th>内容</th>
+            </tr>
+        </table>
+
+        <table id="ListTb3" style="width: 500px;" class=" table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>次数</th>
+                <th>内容</th>
+            </tr>
+        </table>
+    </div>
+
+    <script id="dataList" type="text/x-jquery-tmpl">
+        {{each  Data}}
+        <tr>
+            <td>${ReportDateStr}</td>
+            <td>${SatisfyCount}</td>
+            <td>${SuggestCount}</td>
+            <td>${OpinionCount}</td>
+            <td>${TotalCount}</td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <script id="dataList2" type="text/x-jquery-tmpl">
+        {{each  Data}}
+        <tr>
+            <td>${Count}</td>
+            <td>${Remark}</td>
+        </tr>
+        {{/each}}
+    </script>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            var ps = {
+                date_select: function () {
+                    _.options.url = "/RoomFeedBack/DateStatistic";
+                    _.ajaxData(_.options, function (result) {
+                        $("#dataList").tmpl(result).appendTo('#ListTb');
+                    })
+                },
+                type_select: function (type,container) {
+                    _.options.url = "/RoomFeedBack/TypeRemarkStatistic?type=" + type;
+                    _.ajaxData(_.options, function (result) {
+                        $("#dataList2").tmpl(result).appendTo('#' + container);
+                    })
+                }
+            }
+            ps.date_select();
+            ps.type_select("建议",'ListTb2');
+            ps.type_select("意见", 'ListTb3');
+        })
+    </script>
+}
+

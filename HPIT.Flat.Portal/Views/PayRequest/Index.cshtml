@@ -1,0 +1,381 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+        label {
+           width:100px;
+        }
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="">
+        @*<input type="text" class="form-control" id="fileName" />
+        <h3></h3>*@
+        @*<div class="box-header with-border">
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>
+                <li><a href="#">调查管理</a></li>
+                <li class="active">问卷列表</li>
+            </ol>
+        </div>*@
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-primary" id="addPay" target="_self">付款申请</a><br />
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+                <div class="has-feedback">
+                    <ul>
+                        <li>
+                            <label>公寓类型：</label>
+                            <select id="DropDownList_Direction" class="form-control input-sm searchInput">
+                                <option value="">请选择</option>
+                                <option value="1">男生宿舍</option>
+                                <option value="0">女生宿舍</option>
+                            </select>
+                        </li>
+                        <li>
+                            <label>缴费状态：</label>
+                            <select id="DropDownList_Direction" class="form-control input-sm searchInput">
+                                <option value="">请选择</option>
+                                <option value="2">已缴费</option>
+                                <option value="1">未缴费</option>
+                            </select>
+                        </li>
+                        <li>
+                            <input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" />
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>公寓编号</th>
+                        <th>学生姓名</th>
+                        <th>学生学号</th>
+                        <th>项目部</th>
+                        <th>应缴费金额</th>
+                        <th>押金</th>
+                        <th>月租金</th>
+                        <th>培训周期</th>
+                        @*<th>上次缴费金额</th>*@
+                        <th>累计缴费金额</th>
+                        <th>扣费金额</th>
+                        <th>扣费原因</th>
+                        @*<th>备注</th>*@
+                        <th>状态</th>
+                        <th style="width:150px;text-align:center;" colspan="2">操作</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${DormNo}</td>
+                        <td>${StuName}</td>
+                        <td>${StuNo}</td>
+                        <td>${ProjectName}</td>
+                        <td>${NeedPayMoney}</td>
+                        <td>${DepositMoney}</td>
+                        <td>${RentMoney}</td>
+                        <td>${PeriodMonth}</td>
+                        @*<td>${CurrentPayMoney}</td>*@
+                        <td>${RealPayMoney}</td>
+                        @*<td>${Remark}</td>*@
+                        <td>${DeductMoney}</td>
+                        <td>${DeductRemark}</td>
+                        <td>${StatusStr}</td>
+                        <th style="width:90px;text-align:center;" colspan="2">
+                            <a href="#" type="pay" pid="${PID}">付款</a>
+                            <a href="#" type="detail" pid="${PID}">详情</a>
+                        </th>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="createModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-top: -71px;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">付款申请</h3>
+            </div>
+            <div class="modal-body">
+                <form id="payRequestForm">
+                    <table class="table table-bordered table-striped" style="width:550px">
+                        <tr>
+                            <td>公寓编号</td>
+                            <td>
+                                <input class="form-control" name="PID" id="requestID" style="display:none;" />
+                                <input class="form-control" name="DormNo" id="DormNo" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>应缴费金额</td>
+                            <td><input class="form-control" type="number" name="NeedPayMoney" id="NeedPayMoney" /></td>
+                        </tr>
+                        <tr>
+                            <td>已缴费金额</td>
+                            <td><input class="form-control" type="number" name="TotalPayMoney" id="TotalPayMoney" /></td>
+                        </tr>
+                        <tr>
+                            <td>缴费金额</td>
+                            <td><input class="form-control" type="number" name="CurrentPayMoney" id="CurrentPayMoney" /></td>
+                        </tr>
+                        <tr>
+                            <td>付款方式</td>
+                            <td>
+                                <select id="DropDownList_PayType" class="form-control input-sm searchInput">
+                                    <option value="1">微信</option>
+                                    <option value="2">支付宝</option>
+                                    <option value="3">其他</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>备注</td>
+                            <td><input class="form-control" name="Remark" id="Remark" /></td>
+                        </tr>
+                        <tr>
+                            <td>票据</td>
+                            <td>
+                                <input type="button" value="上传票据" style="width:100px;height:35px;" class="btn btn-primary" id="fileUp">
+                                @*<input type="text"  class="form-control" id="fileName" />*@
+                                <h5></h5>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="payRequestSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="payDetailModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">付款详情</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" id="detailTb" style="width:550px">
+                    <tr>
+                        <th>缴费金额</th>
+                        <th>缴费日期</th>
+                        <th>审核状态</th>
+                        <th>备注</th>
+                    </tr>
+                </table>
+                <script id="detailList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${PayMoney}</td>
+                        <td>${CreateTime}</td>
+                        <td>${AuditStr}</td>
+                        <th>${Remark}</th>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="payRequestSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="FileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                @*<a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>*@
+                <input type="file" name="filenames" id="txt_file" multiple class="file-loading" />
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            rentMoney: 0,
+            depositMoney: 0,
+            basicInfo: {},
+            fileinfo: null,
+            queryList: function () {
+                var batch = $("#TextBox_Batch").val();
+                var projectName = $("#TextBox_ProjectPart").val();
+                var direction = $("#DropDownList_Direction").val();
+                var data = { "PageIndex": _.currentPageIndex - 1, "PageSize": 15, "Entity": { "Batch": batch, "ProjectName": projectName, "Direction": direction } };
+                _.queryList("/PayRequest/QueryPageData", data);
+            },
+            queryUserBasicInfo: function () {
+                _.options.url = "/PayRequest/GetUserPayBasicInfo";
+                _.ajaxData(_.options, function (result) {
+                    dorm.basicInfo = result;
+                    $('#DormNo').val(dorm.basicInfo.DormNo);
+                    $('#NeedPayMoney').val(dorm.basicInfo.NeedPayMoney);
+                    $('#TotalPayMoney').val(dorm.basicInfo.TotalPayMoney);
+                })
+            },
+            queryPayDetail: function (requestID) {
+                var data = { "requestID": requestID };
+                _.options.url = "/PayRequest/QueryPayDetailByRequestID";
+                _.options.data = data;
+                _.ajaxData(_.options, function (result) {
+                    $("#detailTb tr:gt(0)").remove();
+                    $("#detailList").tmpl(result).appendTo('#detailTb');
+                });
+
+            }
+        }
+        var FileInput = function () {
+            var oFile = new Object();
+
+            //初始化fileinput控件（第一次初始化）
+            oFile.Init = function (ctrlName, uploadUrl) {
+                var control = $('#' + ctrlName);
+
+                //初始化上传控件的样式
+                control.fileinput({
+                    language: 'zh', //设置语言
+                    uploadUrl: uploadUrl, //上传的地址
+                    allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                    showUpload: true, //是否显示上传按钮
+                    showCaption: false,//是否显示标题
+                    browseClass: "btn btn-primary", //按钮样式
+                    //dropZoneEnabled: false,//是否显示拖拽区域
+                    //minImageWidth: 50, //图片的最小宽度
+                    //minImageHeight: 50,//图片的最小高度
+                    //maxImageWidth: 1000,//图片的最大宽度
+                    //maxImageHeight: 1000,//图片的最大高度
+                    //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+                    //minFileCount: 0,
+                    maxFileCount: 10, //表示允许同时上传的最大文件个数
+                    enctype: 'multipart/form-data',
+                    validateInitialCount: true,
+                    previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+                    msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                });
+
+                //导入文件上传完成之后的事件
+                $("#txt_file").on("fileuploaded", function (event, data, previewId, index) {
+                    $("#FileModal").modal("hide");
+                    var data = data;
+                    dorm.fileinfo = data.response;
+                    $('#filename').attr('value', data.files[0].name);
+                    $('h5').html(data.files[0].name);
+                    if (data == undefined) {
+                        toastr.error('文件格式类型不正确');
+                        return;
+                    }
+                });
+            }
+            return oFile;
+        };
+        $(document).ready(function () {
+            //替换审批人
+            dorm.queryUserBasicInfo();
+            $("#searchBtn").click(function () {
+                _.currentPageIndex = 1;
+                dorm.queryList();
+            })
+            //操作按钮，审核
+            $("#ListTb").on("click", "a", function () {
+                var id = $(this).attr("pid");
+                var type = $(this).attr("type");
+                //删除调查表单
+                if (type == "pay") {
+                    $('#requestID').val(id);
+                    $("#createModal").modal('show');
+                }
+                if (type == "detail") {
+                    $("#payDetailModal").modal('show');
+                    dorm.queryPayDetail(id);
+                }
+            })
+            $('#addPay').click(function () {
+
+                $("#createModal").modal('show');
+            })
+            $('#fileUp').click(function () {
+                $('#FileModal').modal('show');
+                var oFileInput = new FileInput();
+                oFileInput.Init("txt_file", "/FileUpload/ProcessUploadFiles");
+            })
+            $('#DormNo').change(function () {
+                var dormNo = $(this).val();
+                _.options.url = '/PayRequest/DormChange?DormNo=' + dormNo;
+                _.ajaxData(_.options, function (result) {
+                    //alert(result.Data);
+                    _.depositMoney = result.Data.DepositMoney;
+                    _.rentMoney = result.Data.RentMoney;
+                    //if (result.Data.DormSize == 0) {
+                    //    $('#NeedPayMoney').val(1200);
+                    //}
+                    //if (result.Data.DormSize == 1) {
+                    //    $('#NeedPayMoney').val(1600);
+                    //}
+                    //if (result.Data.DormSize == 2) {
+                    //    $('#NeedPayMoney').val(1650);
+                    //}
+                })
+            })
+            $('#payRequestSave').click(function () {
+                _.options.url = "/PayRequest/PayRequestSave";
+                var payType = $("#DropDownList_PayType").val();
+                //_.options.data = $('#payRequestForm').serialize();
+                _.options.data = {
+                    "PID": $('#requestID').val(),
+                    "DepositMoney": dorm.depositMoney,
+                    "RentMoney": dorm.rentMoney,
+                    "DormNo": $('#DormNo').val(),
+                    "NeedPayMoney": $('#NeedPayMoney').val(),
+                    "CurrentPayMoney": $('#CurrentPayMoney').val(),
+                    "Remark": $('#Remark').val(),
+                    "FileInfo": dorm.fileinfo,
+                    "PayType": payType
+                }
+                if (dorm.fileinfo == null || dorm.fileinfo == undefined) {
+                    alert("付款时候需要提交，支付宝或微信的转账截图！！！");
+                    return false;
+                }
+                _.ajaxData(_.options, function (result) {
+                    //alert(result.Data);
+                    if (result.State == 201) {
+                        alert(result.Data);
+                        return false;
+                    } else
+                    {
+                        dorm.queryList();
+                    }
+                })
+            })
+            dorm.queryList();
+        })
+    </script>
+}
+

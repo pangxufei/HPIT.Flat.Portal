@@ -1,0 +1,188 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section>
+    <div>
+        <select id="Select1" class=" input-sm searchInput">
+            <option value="1">2020-01</option>
+            <option value="2">2020-02</option>
+            <option value="3">2020-03</option>
+            <option value="4">2020-04</option>
+            <option value="5">2020-05</option>
+            <option value="6">2020-06</option>
+            <option value="7">2020-07</option>
+            <option value="8">2020-08</option>
+            <option value="9">2020-09</option>
+            <option value="10">2020-10</option>
+            <option value="11">2020-11</option>
+            <option value="12">2020-12</option>
+        </select>
+        <select id="Select2" class=" input-sm searchInput">
+            <option value="1">2020-01</option>
+            <option value="2">2020-02</option>
+            <option value="3">2020-03</option>
+            <option value="4">2020-04</option>
+            <option value="5">2020-05</option>
+            <option value="6">2020-06</option>
+            <option value="7">2020-07</option>
+            <option value="8">2020-08</option>
+            <option value="9">2020-09</option>
+            <option value="10">2020-10</option>
+            <option value="11">2020-11</option>
+            <option value="12">2020-12</option>
+        </select>
+        <input type="button" value="查询" id="seleid" class="btn btn-primary" />
+        <div class="layui-fluid">
+            <div id="main" class="none" style="width: 50%; height: 400px; float: left; " class="col-md-8"></div>
+            <div id="main2" class="none" style="width: 50%; height: 400px; float: left; " class="col-md-8"></div>
+            <div id="main3" class="none" style="width: 50%; height: 400px; float: left; " class="col-md-8"></div>
+        </div>
+    </div>
+    <div id="Echaet1" class="divtable">
+
+        <table id="listTB" class="table table-hover" style="font-size:20px">
+            <tr>
+                <th>公寓名称</th>
+                <th>公寓地址</th>
+                <th>公寓类型</th>
+                <th>公寓电话</th>
+                <th>公寓大小</th>
+                <th>备注</th>
+                <th>公寓状态</th>
+                <th>公寓押金</th>
+                <th>公寓租金</th>
+            </tr>
+        </table>
+        <div class="pagebox" style="height:30px;" id="box"></div>
+        <script id="scrID" type="text/x-jquery-tmpl">
+            {{each  Data}}
+            <tr>
+                <td>${[DormNo]}</td>
+                <td>${DormName}</td>
+                <td>${TypeStr}</td>
+                <td>${Phone}</td>
+                <td>${SizeStr}</td>
+                <td>${Remark}</td>
+                <td>${StatusStr}</td>
+                <td>${DepositMoney}</td>
+                <td>${RentMoney}</td>
+            </tr>
+            {{/each}}
+
+        </script>
+    </div>
+</section>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            //点击查询出现对应扇形图
+            $('#seleid').click(function () {
+                //获取开始时间和结束时间
+                var start = $('#Select1 option:selected').text();
+                var end = $('#Select2 option:selected').text();
+                //获取图表
+                var myChart = echarts.init(document.getElementById('main'));
+                var myChart2 = echarts.init(document.getElementById('main2'));
+
+                $.ajax({
+                    url: "../Echarts/EchartSelect",
+                    data: {
+                        "start": start,
+                        "end": end
+                    },
+                    type: "post",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data);
+                        //扇形图
+                        myChart.setOption({
+                            title: {
+                                text: 'IT人才公寓入住率统计',
+                                subtext: '入住统计',
+                                left: 'center'
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b} : {c} ({d}%)'
+                            },
+                            legend: {
+                                type: 'scroll',
+                                orient: 'vertical',
+                                right: 10,
+                                top: 20,
+                                bottom: 20,
+                                data: data,
+
+                                selected: data
+                            },
+                            series: [
+                                {
+                                    name: '姓名',
+                                    type: 'pie',
+                                    radius: '55%',
+                                    center: ['40%', '50%'],
+                                    data:
+                                        [
+                                            { value: data.UsedBeds, name:"已用床位" },
+                                            { value: data.UnUsedBeds, name:"未用床位" }
+                                        ],
+
+                                    emphasis: {
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }
+                            ]
+
+                        });
+                        //柱状图
+                        myChart2.setOption({
+                            xAxis: {
+                                type: 'category',
+                                data: ['总床位', '已用床位', '未用床位']
+                            },
+                            yAxis: {
+                                type: 'value'
+                            },
+                            series: [{
+                                data: [
+                                    { value: data.TotalBeds, name: "总床位" },
+                                    { value: data.UsedBeds, name: "已用" },
+                                    { value: data.UnUsedBeds, name: "未用" }
+                                ],
+                                type: 'bar'
+                            }]
+
+                        })
+                    }
+
+                })
+                myChart.on("click", function (parm) {
+                    console.log(parm.value);
+                    $("#Echaet1").show();
+                    $.ajax({
+                        url: "../Echarts/Echartlist?value=" + parm.value,
+                        type: "post",
+                        datatype: "json",
+                        success: function (result) {
+                            $("#listTB tr:gt(0)").remove();
+                            $("#scrID").tmpl(result).appendTo("#listTB");
+                        }
+                    })
+
+                })
+
+            });
+
+        })
+
+    </script>
+}
+

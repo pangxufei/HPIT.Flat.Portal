@@ -1,0 +1,257 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <style>
+        label {
+          width:   100px;
+        }
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="">
+        @*<input type="text" class="form-control" id="fileName" />
+            <h3></h3>*@
+        @*<div class="box-header with-border">
+                <ol class="breadcrumb">
+                    <li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>
+                    <li><a href="#">调查管理</a></li>
+                    <li class="active">问卷列表</li>
+                </ol>
+            </div>*@
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+                <div class="has-feedback">
+                    <ul>
+                        <li>
+                            <label>项目部门：</label>
+                            <select id="DropDownList_Direction" class="form-control input-sm searchInput">
+                                @foreach (var item in ViewBag.ProJname)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </li>
+                        <li>
+                            <label>学生姓名：</label>
+                            <input id="StuName" class="form-control" type="text" />
+                        </li>
+                        <li><input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" /></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <input type="button" value="批量审批通过" id="batchPass" style="margin-top: 38px;margin-bottom: 5px;"  class="btn btn-primary" />
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th><input type="checkbox" id="checPersonkall"></th>
+                        <th style="display:none">MID</th>
+                        <th>学生姓名</th>
+                        <th>宿舍编号</th>
+                        <th>学生学号</th>
+                        <th>项目部</th>
+                        <th>人事经理</th>
+                        <th>支付金额</th>
+                        <th>支付时间</th>
+                        <th>支付方式</th>
+                        <th>支付图片</th>
+                        <th>审核人</th>
+                        <th>审核状态</th>
+                        <th>操作</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <th><input type="checkbox" name="checkePerson" value="${MID}" /></th>
+                        <td style="display:none">${MID}</td>
+                        <td>${StuName}</td>
+                        <td>${DormNo}</td>
+                        <td>${StuNo}</td>
+                        <td>${ProjectName}</td>
+                        <td>${PEM}</td>
+                        <td>${PayMoney}</td>
+                        <td>${CreateTime}</td>
+                        <td>${PayTypeString}</td>
+                        <td>${FileName}</td>
+                        <td>${Auditor}</td>
+                        <td>${AuditStatusStr}</td>
+                        <td>
+                            <a href="#" type="pass" tid="${MID}">通过</a>
+                            <a href="#" type="reject" tid="${MID}">拒绝</a>
+                            <a href="#" type="detail" data-toggle="modal" data-target="#exampleModal" did="${FileName}">详情</a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+@*模态框*@
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="exampleModalLabel">图片收据</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <img id="img" src="" style="width:300px;height:450px;margin-left:20%;"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            rentMoney: 0,
+            depositMoney: 0,
+            fileinfo: null,
+            count: null,
+            selectCheckboxAll(name, id) {
+                if ($("#" + id).prop("checked")) {
+                    $("input[type='checkbox'][name='" + name + "']").prop("checked", true);//全选
+
+                } else {
+                    $("input[type='checkbox'][name='" + name + "']").prop("checked", false);  //取消全选
+                }
+            },
+            queryList: function () {
+                var batch = $("#TextBox_Batch").val();
+                var projectName = $("#TextBox_ProjectPart").val();
+                var direction = $("#DropDownList_Direction").val();//获取选中下拉框
+                var name = $("#StuName").val();//获取输入姓名
+                var ProJName = $("#selectitem").children('option:selected').val();
+                count = { "PageIndex": _.currentPageIndex - 1, "PageSize": 15, "ProJName": ProJName, "StuName": name, "Entity": { "Batch": batch, "ProjectName": projectName, "Direction": direction } };
+                _.queryList("/PayDetails/QueryPageData", count);
+            }
+        }
+        $(document).ready(function () {
+            $("#selectitem").children().first().text("请选择项目部").attr("value", "")//设置第一条属性
+            $("#selectitem ").eq(0).selectedIndex = 0;   //设置Select索引值为0的项选中
+            dorm.queryList();//初始加载全部
+            //部门查询
+            $("#selectitem").change(function () {
+                var ProjName = $(this).children('option:selected').val();
+                console.log(ProjName);
+                dorm.queryList();
+            });
+            //全选
+            $("#checPersonkall").click(function () {
+                dorm.selectCheckboxAll('checkePerson', 'checPersonkall')
+            })
+
+            $("#batchPass").click(function () {
+                var ids = "";
+                $("input[name=checkePerson]:checked").each(function () {
+                    ids += $(this).attr('value') + ',';
+                });
+                ids = ids.substr(0, ids.length - 1);//去除最后一个,号
+                //alert(type);
+                _.options.data = { "ids": ids,"type":1 };
+                _.options.url = "/PayDetails/BatchAudit";
+                _.ajaxData(_.options, function (result) {
+                    if (result.State == 200) {
+                        alert("审核成功！");
+                        dorm.queryList();
+                    } else
+                    {
+                        alert(result.Data);
+                    }
+                })
+            });
+
+            //学生姓名查询
+            $("#searchBtn").click(function () {
+                dorm.queryList();
+            });
+
+            $("#ListTb").on("click", "a", function () {
+                var tid = $(this).attr("tid");
+                var dno = $(this).attr('did');
+                var type = $(this).attr("type");
+
+                var img = "/Upload/" + dno;
+                //删除调查表单
+                if (type == "detail") {
+                    //$("#Text1").val(dno);
+                    $("#img").attr("alt", "");
+                    $("#img").attr("title", "");
+                    $("#img").attr("src", img);
+                }
+
+                else {
+                    if (type == "pass") {
+                        $.ajax({
+                            url: "/PayDetails/Audit",
+                            data: { "id": tid,'type':1 },
+                            type: "post",
+                            datatype: "json",
+                            success: function (result) {
+                                if (result > 0 ) {
+                                    dorm.queryList();
+                                } else {
+                                    alert("审核失败！");
+                                }
+                            }
+                        })
+                    }
+                    if (type == "reject") {
+                        $.ajax({
+                            url: "/PayDetails/Audit",
+                            data: { "id": tid, 'type': 2  },
+                            type: "post",
+                            datatype: "json",
+                            success: function (result) {
+                                if (result > 0) {
+                                    dorm.queryList();
+                                } else {
+                                    alert("审核失败！");
+                                }
+                            }
+                        })
+                    }
+                }
+
+
+            })
+            //$("#Btn").click(function () {
+            //    var name = prompt("请输入文件名")
+            //    if (name != "" && name != null) {
+            //        $.get("/PayDetails/ExcelExport", { "date": count, "name": name }, function (rep) {
+            //            if (rep != null) {
+            //                alert(rep)
+            //            }
+            //        })
+            //    }
+
+            //})
+
+        })
+
+    </script>
+}
+
+
+

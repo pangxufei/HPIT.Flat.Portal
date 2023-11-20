@@ -1,0 +1,205 @@
+﻿
+@{
+    ViewBag.Title = "PaymentStatistics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+        #pictwo {
+            float: right;
+            width: 500px;
+            height: 280px;
+            margin-top: -279px;
+        }
+
+        #table {
+            height: 280px;
+            width: 100%;
+            margin: 50px auto
+        }
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="box-body">
+        <div class="pull-left">
+            <div class="form-group form-inline">
+                @*<div class="btn-group">
+        </div>*@
+                <label class="form-control" style="float:left">批次</label>
+                <select id="DropDownList_Batchs" class="form-control searchInput col-md-6 col-lg-6">
+                    @foreach (var item in ViewBag.Batchs)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div style=" width: 100%; height: 1000px">
+            @*图表*@
+            <div id="pie" style=" width: 520px;height: 310px;margin-top: 50px;margin-left: 7%;">
+            </div>
+            <div id="pictwo">
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>公寓编号</th>
+                        <th>学生姓名</th>
+                        <th>学生学号</th>
+                        <th>项目部</th>
+                        <th>应缴费金额</th>
+                        <th>押金</th>
+                        <th>月租金</th>
+                        <th>培训周期</th>
+                        <th>累计缴费金额</th>
+                        <th>缴费类型</th>
+                        <th>入住日期</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${DormNo}</td>
+                        <td>${StuName}</td>
+                        <td>${StuNo}</td>
+                        <td>${ProjectName}</td>
+                        <td>${NeedPayMoney}</td>
+                        <td>${DepositMoney}</td>
+                        <td>${RentMoney}</td>
+                        <td>${PeriodMonth}</td>
+                        <td>${TotalPayMoney}</td>
+                        <td>${PayTypeString}</td>
+                        <td>${JoinTime}</td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script src="~/js/Echarts.js"></script>
+    <script>
+        var dorm = {
+            batch:'',
+            drawPie: function (container, data, imgname, text, subtext) {
+                var pieChart = echarts.init(document.getElementById(container));
+                pieChartOption = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    title: {
+                        text: text,//标题
+                        subtext: subtext//描述
+                    },
+                    //设置饼状图每个颜色块的颜色
+                    color: ['green', 'indigo', 'red', 'orange', 'blue', 'purple', 'yellow'],
+                    series: [{
+                        name: imgname,//项目部名称
+                        type: 'pie',
+                        radius: '85%',
+                        center: ['53%', '50%'],
+                        label: {
+                            normal: {
+                                //饼形图显示格式
+                                formatter: '{b} : {c}',
+                                rich: {
+                                    b: {
+                                        color: 'white',
+                                        fontSize: 14,
+                                        lineHeight: 33
+                                    },
+                                    //设置百分比数字颜色
+                                    per: {
+                                        color: '#00B4FB',
+                                        fontSize: 14,
+                                        padding: [2, 4],
+                                        borderRadius: 2
+                                    }
+                                }
+                            }
+                        },
+                        data: data,
+                        itemStyle: {
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                };
+                pieChart.setOption(pieChartOption);
+                var app = {};
+                app.currentIndex = -1;
+            },
+            draw: function (batch) {
+                $.get("/PaymentStatistics/GetPayStatis?Batch=" + batch, function (rsp) {
+                    //添加数据创建图表
+                    if (rsp != null) {
+
+                        var name = [];
+                        var num = [];
+                        var data = [];
+                        for (var i = 0; i < rsp.length; i++) {
+                            name.push(rsp[i].ProjectName)
+                            num.push(rsp[i].PepNum)
+                        }
+                        for (var j = 0; j < num.length; j++) {
+                            data[j] = { name: name[j], value: num[j] }
+                        }
+                        dorm.drawPie("pie", data, "项目部", "缴费人数统计", "");
+                        // fordiv(rsp, "pie", "项目部", rsp.ProjectName, rsp.PepNum, "项目部人数统计", "根据项目部人数统计")
+                    }
+                })
+            }
+        }
+        $(function () {
+            $("#DropDownList_Batchs").change(function () {
+                dorm.batch = $(this).val();
+                dorm.draw(dorm.batch);
+            })
+            var batch = $("#DropDownList_Batchs option:selected").val();
+            dorm.draw(batch);
+            //获取图表
+            var myChart = echarts.init(document.getElementById('pie'));
+            //图表配置
+            //图表添加单击事件
+            myChart.on("click", function (date) {
+                var ProJName = date.data.name
+                var count = { "PageIndex": _.currentPageIndex - 1, "PageSize": 5, "ProJName": ProJName, "Entity": { "Batch": null } };
+                //调用分页查询
+                _.queryList("/PaymentStatistics/QueryPageData", count)
+                //根据积累缴费人数绘制图表
+                $.get("/PaymentStatistics/GetPayProNum", { "ProName": ProJName }, function (rsp) {
+                    //添加数据创建图表
+                    if (rsp != null) {
+                        var name = [];
+                        var num = [];
+                        var data = [];
+                        for (var i = 0; i < rsp.length; i++) {
+                            name.push(rsp[i].DormNo)
+                            num.push(rsp[i].RealPayMoney)
+                        }
+                        for (var j = 0; j < num.length; j++) {
+                            data[j] = { name: name[j], value: num[j] }
+                        }
+                        dorm.drawPie("pictwo", data, "宿舍与积累缴费", "宿舍与积累缴费统计", "积累缴费统计");
+                    }
+                })
+            })
+        })
+    </script>
+}
+

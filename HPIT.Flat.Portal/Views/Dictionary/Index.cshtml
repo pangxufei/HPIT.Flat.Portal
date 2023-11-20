@@ -1,0 +1,325 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+    </style>
+}
+<section class="content">
+    <div class="box-body">
+        <div class="pull-left">
+            <div class="form-group form-inline">
+                <div class="btn-group">
+                    <a href="#" class="btn btn-primary" id="Ins" target="_self">添加词典</a><br />
+                </div>
+            </div>
+        </div>
+        <div class="box-tools pull-right" style="margin-bottom: 17px;">
+            <div class="has-feedback">
+                <ul>
+                    <li>
+                        <label style="margin-right:0px!important;margin-left:5px;">类型：</label>
+                        <select id="DropDownList_Direction" class=" input-sm searchInput">
+                            <option value="请选择">请选择</option>
+                            <option value="房间容量">房间容量</option>
+                            <option value="房间类型">房间类型</option>
+                        </select>
+                    </li>
+                    <li><input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" /></li>
+                </ul>
+            </div>
+        </div>
+        <div class="">
+            <table id="listTB" class="table table-bordered">
+                <tr>
+                    <th>编号</th>
+                    <th>词典名</th>
+                    <th>规格</th>
+                    <th>类型</th>
+                    <th>启用/禁用</th>
+                    <th>节点</th>
+                    <th>操作</th>
+
+                </tr>
+            </table>
+            <div class="pagebox" style="height:30px;" id="box"></div>
+
+            <script id="scrID" type="text/x-jquery-tmpl">
+
+                {{each Data}}
+                <tr>
+                    <td>${ID}</td>
+                    <td>${Name}</td>
+                    <td>${Value}</td>
+                    <td>${Type}</td>
+                    <td>${Status}</td>
+                    <td>${ParentID}</td>
+                    <td>
+                        <a href="#" type="Upd" id="${ID}">修改</a>
+                        <a href="#" type="Enable" id="${ID}" Status="${Status}">启用/禁用</a>
+                        <a href="#" type="Del" id="${ID}">删除</a>
+                    </td>
+                </tr>
+                {{/each}}
+            </script>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="dictionary" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    添加词典
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form id="dormform">
+                    <table class="table table-bordered table-striped" style="width:100%">
+                        <tr>
+                            <td>词典名</td>
+                            <td><input class="form-control" style="display:none;" name="ID" id="ID"><input class="form-control" name="Name" id="Name"></td>
+                        </tr>
+                        <tr>
+                            <td>规格</td>
+                            <td><input class="form-control" name="Value" id="Value"></td>
+                        </tr>
+                        <tr>
+                            <td>类型</td>
+                            <td><input class="form-control" name="Type" id="Type"></td>
+                        </tr>
+                        <tr>
+                            <td>启用/禁用</td>
+                            <td><input class="form-control" name="Status" id="Status"></td>
+                        </tr>
+                        <tr>
+                            <td>节点</td>
+                            <td>
+                                <input id="ParentID" list="DropDownList_ParentID" class="form-control searchInput col-md-6 col-lg-6">
+                                <datalist id="DropDownList_ParentID"></datalist>
+                            </td>
+                        </tr>
+
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="dormSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script>
+        $(function () {
+            var Type = "";
+            SelList(Type);
+            $("#searchBtn").click(function () {
+                Type = $("#DropDownList_Direction option:selected").val();
+                if (Type == "请选择") {
+                    Type = "";
+                }
+                SelList(Type);
+            })
+
+            $("#dormSave").click(function () {
+                var id = $("#ID").val();
+                if (id == "") {
+                    Ins();
+                }
+                else {
+                    Upd();
+                }
+            })
+            $("#listTB").on("click", "a", function () {
+                var type = $(this).attr("type");
+                var id = $(this).attr("id");
+                if (type == 'Upd') {
+                    $("#dictionary").modal('show');
+                    SelParentID();
+                    GetById(id);
+                   
+                }
+                if (type == "Del") {
+                    swal({
+                        title: "确定删除吗？",
+                        text: "你将无法恢复该宿舍相关信息！",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "确定删除！",
+                        closeOnConfirm: false
+                    }), Del(id);
+                }
+                if (type == "Enable") {
+                    var status = $(this).attr("Status");
+                    UpdStatus(id, status);
+                }
+            })
+            $("#Ins").click(function () {
+                $("#dictionary").modal('show');
+                SelParentID();
+            })
+            //字符串序列化
+            var Dict = [];
+            function json() {
+                var ID = $("#ID").val()
+                var Name = $("#Name").val()
+                var Value = $("#Value").val()
+                var Type = $("#Type").val()
+                var Status = $("#Status").val()
+                var ParentID = $("#ParentID").val();
+                Dict = { "ID": ID, "Name": Name, "ParentID": ParentID, "Status": Status, "Type": Type, "Value": Value }
+            }
+            //下拉框
+            function SelParentID() {
+                $.ajax({
+                    url: "/Dictionary/Sel",
+                    data: {},
+                    type: "Get",
+                    dataType: "json",
+                    success: function (result) {
+                        var a = [];
+                        for (var i = 0; i < result.Data.length; i++) {
+                            a[i] = result.Data[i].ParentID;
+                        }
+                        var b = a.distinct();
+                        $('#DropDownList_ParentID').empty();
+                      
+                        for (var i = 0; i < b.length; i++) {
+                            if (b[i] != null ) {
+                                $('#DropDownList_ParentID').append('<option  value=' + b[i] + '></option>');
+                            }
+                        }
+                    }
+                })
+            }
+            //列表查询
+            function SelList() {
+                $.ajax({
+                    url: "/Dictionary/Sel",
+                    data: { "Type": Type },
+                    type: "Get",
+                    dataType: "json",
+                    success: function (result) {
+                        $("#listTB tr:gt(0)").remove();
+                        $("#scrID").tmpl(result).appendTo("#listTB");
+                    }
+                })
+            }
+            //添加
+            function Ins() {
+                json();
+                $.ajax({
+                    url: "/Dictionary/Ins",
+                    data: { Dict },
+                    type: "post",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == -1) {
+                            alert("失败");
+                        } else {
+                            alert("成功");
+                            SelList();
+                        }
+                    }
+                })
+            }
+            //根据id查询
+            function GetById(ID) {
+                $.ajax({
+                    url: "/Dictionary/GetByID",
+                    data: { "ID": ID },
+                    type: "post",
+                    dataType: "json",
+                    success: function (result) {
+                        $("#ID").val(result.ID);
+                        $("#Name").val(result.Name)
+                        $("#Value").val(result.Value)
+                        $("#Type").val(result.Type)
+                        $("#Status").val(result.Status)
+                        //$("#ParentID").val(result.ParentID)
+                    }
+                })
+            }
+            //修改
+            function Upd() {
+                json();
+                $.ajax({
+                    url: "/Dictionary/Upd",
+                    data: { Dict },
+                    type: "post",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == -1) {
+                            alert("失败");
+                        } else {
+                            alert("成功");
+                            SelList();
+                        }
+                    }
+                })
+            }
+            //启用/禁用
+            function UpdStatus(id, Status) {
+                $.ajax({
+                    url: "/Dictionary/UpdStatus",
+                    data: { "id": id, "Status": Status },
+                    type: "post",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == -1) {
+                            alert("失败");
+                        } else {
+                            alert("成功");
+                            SelList();
+                        }
+                    }
+                })
+            }
+            //删除
+            function Del(ID) {
+                $.ajax({
+                    url: "/Dictionary/Del",
+                    data: { "id": ID },
+                    type: "Post",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result == -1) {
+                            alert("失败");
+                        } else {
+                            SelList();
+                        }
+                    }
+                })
+            }
+            //去重
+            Array.prototype.distinct = function () {
+                var arr = this,
+                    i,
+                    j,
+                    len = arr.length;
+                for (i = 0; i < len; i++) {
+                    for (j = i + 1; j < len; j++) {
+                        if (arr[i] == arr[j]) {
+                            arr.splice(j, 1);
+                            len--;
+                            j--;
+                        }
+                    }
+                }
+                return arr;
+            };
+        })
+    </script>
+}
+

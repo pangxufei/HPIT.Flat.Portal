@@ -1,0 +1,222 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <style>
+        .modal-dialog {
+            margin-top: -44px;
+        }
+    </style>
+}
+<section class="content">
+    <div class="">
+        @*<div class="box-header with-border">
+                    <ol class="breadcrumb">
+                        <li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>
+                        <li><a href="#">调查管理</a></li>
+                        <li class="active">问卷列表</li>
+                    </ol>
+            </div>*@
+        <div class="box-body">
+            @*<div class="pull-left">
+                    <div class="form-group form-inline">
+                        <div class="btn-group">
+                            <a href="#" class="btn btn-primary" id="addDorm" target="_self"></a><br />
+                        </div>
+                    </div>
+                </div>*@
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+                <div class="has-feedback">
+                    <ul>
+                        <li>
+                            <label style="margin-right:0px!important;margin-left:5px;">项目部：</label>
+                            <input class="form-control" name="projectName" id="projectName">
+                        </li>
+                        <li>
+                            <label style="margin-right:0px!important;margin-left:5px;">学生姓名：</label>
+                            <input class="form-control" name="stuName" id="stuName">
+                        </li>
+                        <li><input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" /></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>学生姓名</th>
+                        @*<th>批次</th>*@
+                        <th>项目部</th>
+                        <th>PEM</th>
+                        <th>公寓号</th>
+                        <th>入住日期</th>
+                        <th>离宿日期</th>
+                        <th>房间标准</th>
+                        <th>应缴金额</th>
+                        <th>月押金</th>
+                        <th>实缴金额</th>
+                        <th>欠费金额</th>
+                        <th>扣款金额</th>
+                        @*<th>扣款原因</th>*@
+                        <th>退款金额</th>
+                        @*<th>缴费状态</th>*@
+                        <th>操作</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${StuName}</td>
+                        @*<td>${Batch}</td>*@
+                        <td>${ProjectName}</td>
+                        <td>${PEM}</td>
+                        <td>${DormNo}</td>
+                        <td>${JoinTime}</td>
+                        <td>${LeaveTime}</td>
+                        <td>${DormSize}</td>
+                        <td>${NeedPayMoney}</td>
+                        <td>${DepositMoney}</td>
+                        <td>${TotalPayMoney}</td>
+                        <th>${OweMoney}</th>
+                        <th>${DeductMoney}</th>
+                        @*<th>${DeductRemark}</th>*@
+                        <th>${RefundMoney}</th>
+                        @*<td>${Status}</td>*@
+                        <td><a href="#" type="deduct"  pid="${PID}" stuName="${StuName}" >扣款</a>
+                            <a href="#" type="refund" pid="${PID}" stuName="${StuName}">退款</a>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="deductModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">扣款提交单</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" style="width:550px">
+                    <tr>
+                        <td>扣款金额</td>
+                        <td>
+                        <input class="form-control" type="number" name="deductMoney" id="deductMoney" /></td>
+                    </tr>
+                    <tr>
+                        <td>备注</td>
+                        <td><textarea cols="60" rows="5" name="Remark" id="Remark" ></textarea></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="deductSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="refundModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">退款提交单</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" style="width:550px">
+                    <tr>
+                        <td>退款金额</td>
+                        <td>
+                            <input class="form-control" type="number" name="refundMoney" id="refundMoney" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>备注</td>
+                        <td><textarea cols="60" rows="5" name="Remark" id="Remark"></textarea></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="refundSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            pid:'',
+            direction: '',
+            batch: '',
+            projectName: '',
+            queryList: function () {
+                var batch = '';
+                var projectName = $("#projectName").val();
+                //var direction = $("#DropDownList_Direction").val();
+                var direction = '';
+                var stuName = $("#stuName").val();
+                var data = { "PageIndex": _.currentPageIndex - 1, "PageSize": 10, "Entity": { "Batch": batch, "ProjectName": projectName, "Direction": direction, "StuName": stuName } };
+                _.queryList("/PaymentDetails/QueryPageData", data);
+            }
+        }
+        $(document).ready(function () {
+            $("#searchBtn").click(function () {
+                _.currentPageIndex = 1;
+                dorm.queryList();
+            })
+            $("#ListTb").on("click", "a", function () {
+                var id = $(this).attr("pid");
+                var type = $(this).attr("type");
+                //删除调查表单
+                if (type == "deduct") {
+                    dorm.pid = id;
+                    $("#deductModal").modal('show');
+                }
+                if (type == "refund") {
+
+                } dorm.pid = id;
+                $("#refundModal").modal('show');
+            })
+            $("#deductSave").click(function () {
+                var pid = dorm.pid;
+                var remark = $("#Remark").val();
+                var deductMoney = $("#deductMoney").val();
+                _.options.data = { "requestID": pid, "remark": remark, "deductMoney": deductMoney };
+                _.options.url = "/Deduct/DoDeductMoney";
+                _.ajaxData(_.options, function (result) {
+                    if (result.State == 200) {
+                        dorm.queryList();
+                    } else
+                    {
+                        alert("扣款失败，请重新尝试！！！");
+                    }
+                })
+            })
+
+            $("#refundSave").click(function () {
+                var pid = dorm.pid;
+                var remark = $("#Remark").val();
+                var deductMoney = $("#refundMoney").val();
+                _.options.data = { "requestID": pid, "remark": remark, "refundMoney": deductMoney };
+                _.options.url = "/Deduct/DoRefundMoney";
+                _.ajaxData(_.options, function (result) {
+                    if (result.State == 200) {
+                        dorm.queryList();
+                    } else {
+                        alert("扣款失败，请重新尝试！！！");
+                    }
+                })
+            })
+            dorm.queryList();
+        })
+    </script>
+}

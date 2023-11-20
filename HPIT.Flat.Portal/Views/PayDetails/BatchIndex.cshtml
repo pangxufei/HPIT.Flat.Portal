@@ -1,0 +1,90 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="">
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;margin-right: 72px;">
+                <div class="has-feedback">
+                    <ul>
+                        <li>
+                            <input type="button" value="查询" id="searchBtn" style="margin-right: 10px;" data-toggle="modal" class="btn btn-primary" />
+                            <input type="button" value="导出" id="Btn" data-toggle="modal" class="btn btn-primary" />
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>批次</th>
+                        <th>总人数</th>
+                        <th>入住人数</th>
+                        <th>入住率</th>
+                        <th>应缴金额</th>
+                        <th>实缴金额</th>
+                        <th>欠费金额</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${Batch}</td>
+                        <td>${TotalStudents}</td>
+                        <td>${LiveStudents}</td>
+                        <td>${LiveRate}</td>
+                        <td>${NeedPayMoney}</td>
+                        <td>${TotalPayMoney}</td>
+                        <td>${OweMoney}</td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            rentMoney: 0,
+            depositMoney: 0,
+            fileinfo: null,
+            count: null,
+            getlist: null,
+            queryList: function () {
+                _.options.url = "/PayDetails/GroupByBatch";
+                _.ajaxData(_.options, function (result) {
+                    _.render(result);
+                })
+            }
+        }
+        $(document).ready(function () {
+            dorm.queryList();//初始加载全部
+            $("#searchBtn").click(function () {
+                dorm.queryList();
+            })
+            $("#Btn").click(function ()
+            {
+                window.open('/PayDetails/ExcelExportGroupByBatch');
+            })
+        })
+    </script>
+}

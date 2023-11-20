@@ -1,0 +1,142 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <style>
+        .modal-dialog {
+            margin-top: -44px;
+        }
+    </style>
+}
+<section class="content">
+    <div class="">
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+                <div class="has-feedback">
+                    <ul>
+                            <li>
+                                <label style="margin-right:0px!important;margin-left:5px;">项目部：</label>
+                                <input class="form-control" style="height:30px;" name="projectName" id="projectName">
+                            </li>
+                            <li>
+                                <label style="margin-right:0px!important;margin-left:5px;">住宿状态：</label>
+                                <select id="DropDownList_livestatus" name="livestatus" class=" input-sm searchInput">
+                                    <option value="0">请选择</option>
+                                    <option value="1">已住宿</option>
+                                    <option value="2">已离宿</option>
+                                </select>
+                            </li>
+                        <li><input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" /></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>学生姓名</th>
+                        <th>学生学号</th>
+                        <th>项目部</th>
+                        <th>学校</th>
+                        <th>手机号</th>
+                        <th>性别</th>
+                        <th>公寓编号</th>
+                        <th>入住时间</th>
+                        <th>离宿时间</th>
+                        <th>入住月份</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${StuName}</td>
+                        <td>${StuNo}</td>
+                        <td>${ProjectName}</td>
+                        <td>${School}</td>
+                        <td>${Phone}</td>
+                        <td>${Gender == 1 ? '男':'女'}</td>
+                        <td>${DormNo}</td>
+                        <td>${JoinTime}</td>
+                        <td>${LeaveTime}</td>
+                        <th>${PeriodType}</th>
+                        <th>${StatusStr}</th>
+                        <td><a href="#" type="retire" stuName="${StuName}" stuNo="${StuNo}">退宿</a></td>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="exampleModalLabel">图片收据</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+
+                    <img id="img" src="" style="width:500px;height:500px" />
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            direction: '',
+            batch: '',
+            projectName: '',
+            queryList: function () {
+                var projectName = $("#projectName").val();
+                //var direction = $("#DropDownList_Direction").val();
+                var livestate = $("#DropDownList_livestatus option:selected").val();
+                var data = { "PageIndex": _.currentPageIndex - 1, "PageSize": 10, "Entity": { "ProjectName": projectName, "Status": livestate } };
+                _.queryList("/Retirement/QueryPageData", data);
+            }
+        }
+        $(document).ready(function () {
+            $("#searchBtn").click(function () {
+                _.currentPageIndex = -1;
+                dorm.queryList();
+            })
+            $("#ListTb").on("click", "a", function () {
+                var name = $(this).attr("stuName");
+                var no = $(this).attr('stuNo');
+                var type = $(this).attr("type");
+                //人员详情信息
+                if (type == "retire") {
+                    _.options.url = "/Retirement/DormRetire";
+                    _.options.data = { "name": name, "no": no, "remark": "退宿" }
+                    _.ajaxData(_.options, function (result) {
+                        if (result.Status == 200) {
+                            dorm.queryList();
+                        } else {
+                            alert("退宿失败，请联系管理员!!!");
+                        }
+                    })
+                }
+            })
+            dorm.queryList();
+        })
+    </script>
+}

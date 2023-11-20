@@ -1,0 +1,225 @@
+﻿@{
+    ViewBag.Title = "绿城中洲国际宾客小程序提成统计";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <style>
+        #loading {
+            display: none;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            filter: alpha(opacity=40);
+            background: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2000;
+        }
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<div id="loading">
+    <img src="~/img/loadingimg/loading3.gif" style="margin-left: 40%; margin-top: 200px; width: 150px; height: 150px;" />
+</div>
+<h2 style="text-align:center">绿城中洲国际宾客小程序提成统计</h2>
+<div class="row">
+    <div class="form-group form-inline">
+        <div style="margin-left: 20px;">
+            @*<a href="#" class="btn btn-primary" id="downloadTempate" target="_self">下载模板</a>*@
+            <a href="#" style="margin-right:5px;" class="btn btn-primary" id="importDorm" target="_self">导入数据</a>
+            <select id="DropDownList_Year" class=" input-sm searchInput">
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+            </select>
+            <select id="DropDownList_Month" class=" input-sm searchInput">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+            <a href="#" style="margin-right:5px;" class="btn btn-primary" id="search" target="_self">查询数据</a>
+            <a href="#" style="margin-right:5px;" class="btn btn-primary" id="exportFeedback" target="_self">导出数据</a>
+            <br />
+        </div>
+    </div>
+</div>
+
+<div class="row" style="display:block; height:95vh;overflow:scroll;">
+    <div class="col-md-5">
+        <table id="ListTb" style="width: 500px; margin-left: 20px;" class="table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>日期</th>
+                <th>满意</th>
+                <th>建议</th>
+                <th>意见</th>
+                <th>总计</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-offset-2 col-md-5">
+        <table id="ListTb2" style="width: 500px;" class=" table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>次数</th>
+                <th>内容</th>
+            </tr>
+        </table>
+
+        <table id="ListTb3" style="width: 500px;" class=" table table-bordered">
+            <tr>
+                @*<th>标签编号</th>*@
+                <th>次数</th>
+                <th>内容</th>
+            </tr>
+        </table>
+    </div>
+
+    <script id="dataList" type="text/x-jquery-tmpl">
+        {{each  Data}}
+        <tr>
+            <td>${ReportDateStr}</td>
+            <td>${SatisfyCount}</td>
+            <td>${SuggestCount}</td>
+            <td>${OpinionCount}</td>
+            <td>${TotalCount}</td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <script id="dataList2" type="text/x-jquery-tmpl">
+        {{each  Data}}
+        <tr>
+            <td>${Count}</td>
+            <td>${Remark}</td>
+        </tr>
+        {{/each}}
+    </script>
+</div>
+<div class="modal fade" id="FileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                @*<a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>*@
+                <input type="file" name="filenames" id="txt_file" multiple class="file-loading" />
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var FileInput = function () {
+            var oFile = new Object();
+
+            //初始化fileinput控件（第一次初始化）
+            oFile.Init = function (ctrlName, uploadUrl) {
+                var control = $('#' + ctrlName);
+
+                //初始化上传控件的样式
+                control.fileinput({
+                    language: 'zh', //设置语言
+                    uploadUrl: uploadUrl, //上传的地址
+                    allowedFileExtensions: ['xlsx', 'xls'],//接收的文件后缀
+                    showUpload: true, //是否显示上传按钮
+                    showCaption: false,//是否显示标题
+                    browseClass: "btn btn-primary", //按钮样式
+                    //dropZoneEnabled: false,//是否显示拖拽区域
+                    //minImageWidth: 50, //图片的最小宽度
+                    //minImageHeight: 50,//图片的最小高度
+                    //maxImageWidth: 1000,//图片的最大宽度
+                    //maxImageHeight: 1000,//图片的最大高度
+                    //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+                    //minFileCount: 0,
+                    maxFileCount: 10, //表示允许同时上传的最大文件个数
+                    enctype: 'multipart/form-data',
+                    validateInitialCount: true,
+                    previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+                    msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                });
+
+                //导入文件上传完成之后的事件
+                $("#txt_file").on("fileuploaded", function (event, data, previewId, index) {
+                    $("#FileModal").modal("hide");
+                    var data = data;
+                    dorm.fileinfo = data.response;
+                    swal("", data.response, "success");
+                    dorm.queryList();
+                    $('#filename').attr('value', data.files[0].name);
+                    $('h5').html(data.files[0].name);
+                    if (data == undefined) {
+                        toastr.error('文件格式类型不正确');
+                        return;
+                    }
+                });
+            }
+            return oFile;
+        };
+        $(document).ready(function () {
+
+            $("#exportFeedback").click(function ()
+            {
+                ////var Filname = prompt("请输入文件名")
+                //var Stuname = $("#StuName").val();//获取输入姓名
+                //var projectName = $("#selectitem").children('option:selected').val();
+                var year = $("#DropDownList_Year option:selected").val();
+                var month = $("#DropDownList_Month option:selected").val();
+                window.open('/RoomDeduct/ExcelExport?year=' + year + "&month=" + month);
+            })
+
+            $('#importDorm').click(function () {
+                $('#FileModal').modal('show');
+                var oFileInput = new FileInput();
+                
+                oFileInput.Init("txt_file", "/FileUpload/ProcessImportRoomDeductFiles");
+            })
+
+            $("#search").click(function () {
+                ps.date_select();
+                ps.type_select("建议", 'ListTb2');
+                ps.type_select("意见", 'ListTb3');
+            })
+
+            var ps = {
+                date_select: function () {
+                    var year = $("#DropDownList_Year option:selected").val();
+                    var month = $("#DropDownList_Month option:selected").val();
+                    _.options.url = "/RoomFeedBack/DateStatistic?year=" + year + "&month=" + month;
+                    _.ajaxData(_.options, function (result) {
+                        $("#ListTb tr:gt(0)").remove();
+                        $("#dataList").tmpl(result).appendTo('#ListTb');
+                    })
+                },
+                type_select: function (type, container) {
+                    var year = $("#DropDownList_Year option:selected").val();
+                    var month = $("#DropDownList_Month option:selected").val();
+                    _.options.url = "/RoomFeedBack/TypeRemarkStatistic?type=" + type + "&year=" + year + "&month=" + month;
+                    _.ajaxData(_.options, function (result) {
+                        $("#" + container + " tr:gt(0)").remove();
+                        $("#dataList2").tmpl(result).appendTo('#' + container);
+                    })
+                }
+            }
+        })
+    </script>
+}
+

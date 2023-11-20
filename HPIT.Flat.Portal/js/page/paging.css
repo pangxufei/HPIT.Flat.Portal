@@ -1,0 +1,70 @@
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fl {
+  float: left;
+}
+.pagebox {
+  height: 40px;
+  line-height: 40px;
+  /*position: absolute;
+  left: 50%;
+  top: 50%;*/
+  /*transform: translate(-50%, -50%);*/
+  text-align: center;
+}
+.pagebox button {
+  padding: 0 10px;
+  margin: 0 10px;
+  height: 40px;
+  float: left;
+  cursor: pointer;
+  border: 1px solid #ebebeb;
+  background-color: #ffffff;
+}
+    .pagebox .first-page,
+    .pagebox .last-page {
+        margin: 0;
+    }
+    .pagebox .pageWrap {
+        height: 40px;
+        float: left;
+        overflow: hidden;
+    }
+        .pagebox .pageWrap ul {
+            width: 100000px;
+            height: 40px;
+            float: left;
+        }
+            .pagebox .pageWrap ul li {
+                width: 60px;
+                height: 40px;
+                border: 1px solid #ebebeb;
+                line-height: 40px;
+                box-sizing: border-box;
+                cursor: pointer;
+                float: left;
+            }
+            .pagebox .pageWrap ul .sel-page {
+                background-color: #4aa272;
+            }
+    .pagebox .jump-text {
+        width: 60px;
+        height: 40px;
+        box-sizing: border-box;
+        text-align: center;
+        margin: 0 5px;
+        float: left;
+    }
+    .pagebox .jump-button {
+        margin: 0;
+        float: left;
+    }
+    .pagebox .total-pages,
+    .pagebox .total-count {
+        margin-left: 10px;
+        float: left;
+        font-size: 14px;
+    }

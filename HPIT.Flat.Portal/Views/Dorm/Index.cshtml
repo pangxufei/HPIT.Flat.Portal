@@ -1,0 +1,590 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style>
+        .modal-dialog {
+            margin-top: -44px;
+        }
+    </style>
+    <link href="~/js/fileinput/css/fileinput.css" rel="stylesheet" />
+    <link href="~/js/fileinput/themes/explorer-fas/theme.css" rel="stylesheet" />
+}
+<section class="content">
+    <div class="">
+        @*<div class="box-header with-border">
+                    <ol class="breadcrumb">
+                        <li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>
+                        <li><a href="#">调查管理</a></li>
+                        <li class="active">问卷列表</li>
+                    </ol>
+            </div>*@
+        <div class="box-body">
+            <div class="pull-left">
+                <div class="form-group form-inline">
+                    <div class="btn-group">
+                        @*<a href="#" class="btn btn-primary" id="downloadTempate" target="_self">下载模板</a>*@
+                        <a href="#" style="margin-right:5px;" class="btn btn-primary" id="importDorm" target="_self">导入数据</a>
+                        <a href="#" class="btn btn-primary" id="addDorm" target="_self">添加公寓</a><br />
+                        <br />
+                    </div>
+                </div>
+            </div>
+            <div class="box-tools pull-right" style="margin-bottom: 17px;">
+                <div class="has-feedback">
+                    <ul>
+                        <li>
+                            <label style="margin-right:0px!important;margin-left:5px;">公寓类型：</label>
+                            <select id="DropDownList_DormType" class=" input-sm searchInput">
+                                <option value="-1">请选择</option>
+                                <option value="0">男生宿舍</option>
+                                <option value="1">女生宿舍</option>
+                            </select>
+                        </li>
+                        @*<li>
+                                <label style="margin-right:0px!important;margin-left:5px;">入住状态：</label>
+                                <select id="DropDownList_Direction" class=" input-sm searchInput">
+                                    <option value="">请选择</option>
+                                    <option value="2">全部入住</option>
+                                    <option value="1">部分入住</option>
+                                    <option value="0">未入住</option>
+                                </select>
+                            </li>*@
+                        <li><input type="button" value="查询" id="searchBtn" data-toggle="modal" class="btn btn-primary" /></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table id="ListTb" class="table table-bordered">
+                    <tr>
+                        <th>公寓编号</th>
+                        <th>公寓地址</th>
+                        <th>公寓类型</th>
+                        <th>押金</th>
+                        <th>租金(人/月)</th>
+                        <th>联系电话</th>
+                        <th>公寓规格</th>
+                        <th>已住人数</th>
+                        <th>备注</th>
+                        <th>状态</th>
+                        <th style="width:90px;text-align:center;" colspan="2">操作</th>
+                    </tr>
+                </table>
+                <div class="pagebox" style="height:30px;" id="box"></div>
+                <script id="dataList" type="text/x-jquery-tmpl">
+                    {{each  Data}}
+                    <tr>
+                        <td>${DormNo}</td>
+                        <td>${DormName}</td>
+                        <td>${TypeStr}</td>
+                        <th>${DepositMoney}</th>
+                        <th>${RentMoney}</th>
+                        <td>${Phone}</td>
+                        <td>${SizeStr}</td>
+                        <td>${MatchSize}</td>
+                        <td>${Remark}</td>
+                        <td>${StatusStr}</td>
+                        <th style="width:130px;text-align:center;" colspan="2">
+                            <a href="#" type="assign" dno="${DormNo}" did="${DID}">人员分配</a>
+                            <a href="#" type="edit" dormStr="${DormJsonStr}">编辑</a>
+                            <a href="#" type="details" did="${DID}">详情</a>
+                            <a href="#" type="delete" did="${DID}" StatusStr="${StatusStr}">删除</a>
+                        </th>
+                    </tr>
+                    {{/each}}
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="createModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">公寓管理</h3>
+            </div>
+            <div class="" style="margin-left:16px">
+                <form id="dormform">
+                    <table class="table table-bordered table-striped" style="width:570px">
+                        <tr>
+                            <td>公寓名称</td>
+                            <td><input class="form-control" style="display:none;" name="DID" id="DID"><input class="form-control" name="DormNo" id="DormNo"></td>
+                        </tr>
+                        <tr>
+                            <td>公寓地址</td>
+                            <td><input class="form-control" name="DormName" id="DormName"></td>
+                        </tr>
+                        <tr>
+                            <td>公寓规格</td>
+                            <td>
+                                <select id="DropDownList_Direction" name="DormSize" class=" input-sm searchInput">
+                                    <option value="-1">请选择</option>
+                                    <option value="4">四人间</option>
+                                    <option value="6">六人间</option>
+                                    <option value="8">八人间</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>公寓类型</td>
+                            <td>
+                                <select id="DropDownList_Direction" name="DormType" class=" input-sm searchInput">
+                                    <option value="-1">请选择</option>
+                                    <option value="0">男生宿舍</option>
+                                    <option value="1">女生宿舍</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>押金</td>
+                            <td><input class="form-control" type="number" name="DepositMoney" id="DepositMoney"></td>
+                        </tr>
+                        <tr>
+                            <td>租金</td>
+                            <td><input class="form-control" type="number" name="RentMoney" id="RentMoney"></td>
+                        </tr>
+                        <tr>
+                            <td>联系电话</td>
+                            <td><input class="form-control" name="Phone" id="Phone"></td>
+                        </tr>
+                        <tr>
+                            <td>备注</td>
+                            <td><input class="form-control" name="Remark" id="Remark"></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="dormSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignModal" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-top: -44px;">
+    <div class="modal-dialog" style="margin-top: -44px;">
+        <div class="modal-content" style="width:661px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">宿舍人员分配</h3>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <select id="DropDownList_Batchs" class="form-control  searchInput col-md-6 col-lg-6">
+                        <option value="">请选择</option>
+                    </select>
+                    <select id="DropDownList_AssignDirection" class="form-control searchInput col-md-6 col-lg-6">
+                        <option value="">请选择</option>
+                        <option value="Java">Java</option>
+                        <option value=".NET">.NET</option>
+                        <option value="大数据">大数据</option>
+                        <option value="企业信息化">企业信息化</option>
+                        <option value="WEB前端">WEB前端</option>
+                        <option value="网络营销">网络营销</option>
+                    </select>
+                    <select id="DropDownList_ProjectName" class="form-control searchInput col-md-6 col-lg-6">
+                        <option value="">请选择</option>
+                    </select>
+                    <select id="DropDownList_sex" class="form-control searchInput col-md-6 col-lg-6">
+                        <option value="true">男</option>
+                        <option value="false">女</option>
+                    </select>
+                </div>
+                <ul id="assignID" class="row" did="" dno=""></ul>
+                <script id="assignData" type="text/x-jquery-tmpl">
+                    {{each Data}}
+                    <li class="col-md-4">
+                        <input type="checkbox" projectName="${pName}" batch="${bName}" direction="${mName}" stuNo="${StudentNo}" stuName="${Name}" pem="${PEM}" phone="${Mobile}" periodType="${periodType}" gender="${Gender}" school="${GraduateSchool}" prm="${PRM}" />${Name}-{{if Gender==1}}男{{else}}女{{/if}}
+                    </li>
+                    {{/each}}
+                </script>
+                <div class="row">
+                    <span class="col-md-2"><label style="margin-top: 9px;">入住时间:</label></span>
+                    <span class="col-md-5">
+                        <input type="text" class="form-control " name="JoinTime" id="TextBox_JoinTime">
+                    </span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="assignSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="DetailsModa" tabindex="0" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="margin-top: -44px;">
+    <div class="modal-dialog" style="margin-top: -44px;">
+        <div class="modal-content" style="width:661px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">宿舍人员详情</h3>
+            </div>
+            <div class="modal-body">
+                <table id="Detailstb" class="table">
+                    <tr>
+                        <th>宿舍编号</th>
+                        <th>姓名</th>
+                        <th>入住时间</th>
+                        <th>操作</th>
+                    </tr>
+                </table>
+                <script id="DetailsData" type="text/x-jquery-tmpl">
+                    {{each Data}}
+                    <tr>
+                        <td>${DormNo}</td>
+                        <td>${StuName}</td>
+                        <td>${CreateTime}</td>
+                        <td>
+                            <a href="#" type="update" did="${DID}" StuNo="${StuNo}" StuName="${StuName}" PEM="${PEM}" PeriodType="${PeriodType}" AID="${AID}">转宿</a>
+                            <a href="#" type="delete" AID="${AID}" did="${DID}">移除</a>
+                        </td>
+                    </tr>
+                    {{/each}}
+
+
+                </script>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" id="DetailsSave" aria-hidden="true">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="FileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                @*<a href="~/Data/ExcelTemplate/Order.xlsx" class="form-control" style="border:none;">下载导入模板</a>*@
+                <input type="file" name="filenames" id="txt_file" multiple class="file-loading" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/js/tmpl/jquery.tmpl.js"></script>
+    <script src="~/js/common/common.js"></script>
+    <script src="~/js/fileinput/js/fileinput.js"></script>
+    <script src="~/js/fileinput/js/locales/zh.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        var dorm = {
+            direction: '',
+            batch: '',
+            projectName: '',
+            queryList: function () {
+                //var batch = $("#TextBox_Batch").val();
+                //var direction = $("#DropDownList_Direction").val();'
+                var dormType = $('#DropDownList_DormType option:selected').val();
+                var data = { "PageIndex": _.currentPageIndex - 1, "PageSize": 10, "Entity": { "DormType": dormType } };
+                _.queryList("/Dorm/QueryPageData", data);
+            },
+            queryStudent: function () {
+                _.options.url = "/Dorm/QueryStudentByBatch?batch=" + dorm.batch + '&direction=' + dorm.direction + '&projectName=' + dorm.projectName + '&sex=' + $("#DropDownList_sex option:selected").val();
+                _.ajaxData(_.options, function (result) {
+                    $("#assignID").empty();
+                    $("#assignData").tmpl(result).appendTo('#assignID');
+                })
+            }
+        }
+        var FileInput = function () {
+            var oFile = new Object();
+
+            //初始化fileinput控件（第一次初始化）
+            oFile.Init = function (ctrlName, uploadUrl) {
+                var control = $('#' + ctrlName);
+
+                //初始化上传控件的样式
+                control.fileinput({
+                    language: 'zh', //设置语言
+                    uploadUrl: uploadUrl, //上传的地址
+                    allowedFileExtensions: ['xlsx', 'xls'],//接收的文件后缀
+                    showUpload: true, //是否显示上传按钮
+                    showCaption: false,//是否显示标题
+                    browseClass: "btn btn-primary", //按钮样式
+                    //dropZoneEnabled: false,//是否显示拖拽区域
+                    //minImageWidth: 50, //图片的最小宽度
+                    //minImageHeight: 50,//图片的最小高度
+                    //maxImageWidth: 1000,//图片的最大宽度
+                    //maxImageHeight: 1000,//图片的最大高度
+                    //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+                    //minFileCount: 0,
+                    maxFileCount: 10, //表示允许同时上传的最大文件个数
+                    enctype: 'multipart/form-data',
+                    validateInitialCount: true,
+                    previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+                    msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                });
+
+                //导入文件上传完成之后的事件
+                $("#txt_file").on("fileuploaded", function (event, data, previewId, index) {
+                    $("#FileModal").modal("hide");
+                    var data = data;
+                    dorm.fileinfo = data.response;
+                    swal("", data.response, "success");
+                    dorm.queryList();
+                    $('#filename').attr('value', data.files[0].name);
+                    $('h5').html(data.files[0].name);
+                    if (data == undefined) {
+                        toastr.error('文件格式类型不正确');
+                        return;
+                    }
+                });
+            }
+            return oFile;
+        };
+        $(document).ready(function () {
+            $('#TextBox_JoinTime').datepicker({
+                autoclose: true,
+                format: 'yyyy-mm-dd'
+            });
+            //替换审批人
+            $("#searchBtn").click(function () {
+                _.currentPageIndex = 1;
+                dorm.queryList();
+            })
+            $('#importDorm').click(function () {
+                $('#FileModal').modal('show');
+                var oFileInput = new FileInput();
+                oFileInput.Init("txt_file", "/FileUpload/ProcessImportFiles");
+            })
+            //宿舍人员详情
+            function DetailsList(id) {
+                $.get("/Dorm/Details", { DId: id }, function (json) {
+                    console.log(json);
+                    $("#DetailsModa").modal('show');
+                    $("#Detailstb tr:gt(0)").remove();
+                    $("#DetailsData").tmpl(json).appendTo('#Detailstb');
+                })
+            }
+            //操作按钮，审核
+            $("#ListTb").on("click", "a", function () {
+                var id = $(this).attr("did");
+                var dno = $(this).attr('dno');
+                var type = $(this).attr("type");
+                var state = $(this).attr("StatusStr");
+                //删除调查表单
+                if (type == 'assign') {
+                    _.options.url = "/Dorm/QueryBatchs";
+                    $('#assignID').attr("did", id);
+                    $('#assignID').attr("dno", dno);
+                    _.ajaxData(_.options, function (result) {
+                        $('#DropDownList_Batchs').empty();
+                        $('#DropDownList_Batchs').append('<option value="请选择">' + "请选择" + '</option>');
+                        for (var i = 0; i < result.Data.length; i++) {
+                            $('#DropDownList_Batchs').append('<option value="' + result.Data[i] + '">' + result.Data[i] + '</option>');
+                        }
+                        dorm.queryStudent();
+                        $("#assignModal").modal('show');
+                    });
+                    _.options.url = "/Dorm/QueryProjectNames";
+                    _.ajaxData(_.options, function (result) {
+                        $('#DropDownList_ProjectName').empty();
+                        $('#DropDownList_ProjectName').append('<option value="请选择">' + "请选择" + '</option>');
+                        for (var i = 0; i < result.Data.length; i++) {
+                            $('#DropDownList_ProjectName').append('<option value="' + result.Data[i] + '">' + result.Data[i] + '</option>');
+                        }
+                        dorm.queryStudent();
+                        $("#assignModal").modal('show');
+                    })
+                }
+                if (type == "edit") {
+                    var jsonstr = $(this).attr('dormStr');
+                    var jsonObj = JSON.parse(jsonstr);
+                    $('#DID').val(jsonObj.DID);
+                    $('#DormNo').val(jsonObj.DormNo);
+                    $('#DormName').val(jsonObj.DormName);
+                    $("#RentMoney").val(jsonObj.RentMoney);
+                    $("#DepositMoney").val(jsonObj.DepositMoney);
+                    $("#Phone").val(jsonObj.Phone);
+                    $("#Remark").val(jsonObj.Remark);
+                    $(".searchInput:gt(0) option[value='" + jsonObj.DormSize + "']").attr("selected", "selected");
+                    $(".searchInput:gt(1) option[value='" + jsonObj.DormType + "']").attr("selected", "selected");
+                    $("#createModal").modal('show');
+                }
+                //人员详情信息
+                if (type == "details") {
+                    DetailsList(id);
+                    //DormSelectList();
+                }
+                if (type == "delete") {
+                    swal({
+                        title: "确定删除吗？",
+                        text: "你将无法恢复该宿舍相关信息！",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "确定删除！",
+                        closeOnConfirm: false
+                    },
+                        function () {
+                            $.get("/Dorm/DormDelete", { id: id, state: state }, function (json) {
+                                if (json.Data > 0) {
+                                    swal("删除！", "该宿舍信息已删除。", "success");
+                                    dorm.queryList();
+                                }
+                            })
+                        });
+                }
+            })
+            //宿舍详情里的点击操作
+            $("#Detailstb").on("click", "a", function () {
+                var aid = $(this).attr("AID");
+                var did = $(this).attr("did");
+                var type = $(this).attr("type");
+                //删除
+                if (type == "delete") {
+                    swal({
+                        title: "确定删除吗？",
+                        text: "你将无法恢复该记录！",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "是否移除！",
+                        closeOnConfirm: false
+                    }, function () {
+                        $.post("/Dorm/DormAssignDelete", { AID: aid }, function (JSON) {
+                            if (JSON.State == 200) {
+                                swal("删除！", "已移除改宿舍。", "success");
+                                DetailsList(did);
+                            }
+                        })
+                    });
+                }
+                //转宿
+                if (type == "update") {
+                    var DormNo = prompt("请输入宿舍号");
+                    var yz = /^[A-Za-z0-9]+$/;
+                    if (!yz.test(DormNo)) {
+                        swal("房间号只能为字母加数字");
+                        return;
+                    }
+                    var StuNo = $(this).attr("StuNo");
+                    var StuName = $(this).attr("StuName");
+                    var PEM = $(this).attr("PEM");
+                    var PeriodType = $(this).attr("PeriodType");
+
+                    $.get("/Dorm/DormAssingnUpdate", { "StuNo": StuNo, "DormNo": DormNo }, function (json) {
+                        if (json.state == "alike") {
+                            swal("", "没有此宿舍！", "error");
+                        }
+                        if (json.state == "Differenttypes") {
+                            swal("", "你还想去异性宿舍？", "error");
+                        }
+                        if (json.state == "RoomType") {
+                            swal("", "交多少钱的住多少钱的！", "error");
+                        }
+                        if (json.state == "succeed") {
+                            swal("", "转宿成功！", "success");
+                            DetailsList(did);
+                        }
+                    })
+                }
+            })
+
+            $('#addDorm').click(function () {
+                $("#createModal").modal('show');
+            })
+            $('#assignSave').click(function () {
+                var result = $('#assignID li input[type=checkbox]:checked');
+                var did = $('#assignID').attr('did');
+                var dno = $('#assignID').attr('dno');
+                var joinTime = $('#TextBox_JoinTime').val();
+                console.log(result);
+                var students = [];
+                for (var i = 0; i < result.length; i++) {
+                    var pem = result[i].attributes['pem'].value;
+                    var stuName = result[i].attributes['stuname'].value;
+                    var stuNo = result[i].attributes['stuNo'].value;
+                    var gender = result[i].attributes['gender'].value;
+                    var periodType = result[i].attributes['periodType'].value;
+                    var prm = result[i].attributes['prm'].value;
+                    var school = result[i].attributes['school'].value;
+                    var phone = result[i].attributes['phone'].value;
+                    var direction = result[i].attributes['direction'].value;
+                    var batch = result[i].attributes['batch'].value;
+                    var projectName = result[i].attributes['projectName'].value;
+                    students.push(
+                        {
+                            "Gender": gender,
+                            'StuName': stuName,
+                            'PEM': pem,
+                            'StuNo': stuNo,
+                            'DID': did,
+                            'DormNo': dno,
+                            "PeriodType": periodType,
+                            "PRM": prm,
+                            "School": school,
+                            "Phone": phone,
+                            "JoinTime": joinTime,
+                            "Direction": direction,
+                            "Batch": batch,
+                            "ProjectName": projectName
+                        });
+                }
+                _.options.url = "/Dorm/DormAssign";
+                _.options.data = { 'DormAssigns': students, 'DID': did };
+                if (joinTime == '' || joinTime == undefined) {
+                    swal("", "请选择入住日期！", "error");
+                    return false;
+                }
+                _.ajaxData(_.options, function (result) {
+                    if (result.State == 200) {
+                        if (result.Data == "Differenttypes") { swal("", "宿舍有男有女？", "error"); return; }
+                        if (result.Data == "Novacancy") { swal("", "宿舍住不了那么多人，换一个宿舍或者减少人员吧!", "error"); return }
+                        if (result.Data == "") { $("#assignModal").modal('hide'); dorm.queryList(); }
+                    } else {
+                        swal("", "分配失败，请重新尝试!", "error");
+                    }
+                });
+            })
+            $("#assignModal select").css("width", "50%");
+            $("#assignModal select").css("float", "left");
+            $("#createModal select").css("width", "100%");
+            $('#dormSave').click(function () {
+                _.options.url = "/Dorm/Save";
+                _.options.data = $('#dormform').serialize();
+                _.ajaxData(_.options, function (result) {
+                    //alert(result.Data);
+                    if (result.Data == 0) {
+                        swal("该房间已存在");
+                        return;
+                    } else {
+                        dorm.queryList();
+                    }
+
+                })
+            })
+            $("#DropDownList_Batchs").change(function () {
+                dorm.batch = $(this).val();
+                dorm.queryStudent();
+            })
+            $("#DropDownList_AssignDirection").change(function () {
+                dorm.direction = $(this).val();
+                dorm.queryStudent();
+            })
+            $("#DropDownList_ProjectName").change(function () {
+                dorm.projectName = $(this).val();
+                dorm.queryStudent();
+            })
+            $("#DropDownList_sex").change(function () {
+                //dorm.sex = $(this).val();
+                dorm.queryStudent();
+            })
+            dorm.queryList();
+        })
+    </script>
+}
+
